@@ -1,0 +1,53 @@
+<html>
+
+<head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="index.js"></script>
+    <script>
+        // const f = x => Math.sin(x);
+        // const f = x => x * x * x;
+        // const f = x => 1;
+        const f = x => x*x;
+        const alphas = [0.5, 1, 1.5];
+        // const alphas = [0.5];
+        // const alphas = [0.9, 1, 1.1];
+        // const alphas = [0, 0.5];
+        const fs = alphas.map(alpha => derivate(f, alpha, -5));
+        const min = -10;
+        const max = 10;
+        // const min = 0.3;
+        // const max = 0.5;
+        const step = (max - min) / 128;
+        const values = [];
+        for (let x = min; x <= max; x += step)
+            values.push([x].concat(fs.map(f => f(x))));
+
+        google.charts.load('current', { 'packages': ['corechart'] });
+        google.charts.setOnLoadCallback(main);
+        function main() {
+            var data = new google.visualization.DataTable();
+            data.addColumn("number", "x");
+            for (const alpha of alphas)
+                data.addColumn("number", "α = " + alpha);
+            data.addRows(values);
+
+            var options = {
+                hAxis: { title: 'x' },
+                vAxis: { title: 'f\'α(x)' },
+                title: 'Fraction Derivation',
+                // curveType: 'function',
+                // legend: { position: 'bottom' }
+            };
+
+            var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+            chart.draw(data, options);
+        }
+    </script>
+</head>
+
+<body>
+    <div id="curve_chart" style="width: 100%; height: 100%; position: fixed;"></div>
+</body>
+
+</html>
