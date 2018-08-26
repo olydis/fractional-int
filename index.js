@@ -8,19 +8,57 @@ function ___integrate(f, min, max) {
         res += INT_STEP * (f(min) + f(min + INT_STEP)) / 2;
     return res + (max - min) * (f(min) + f(max)) / 2;
 }
-function __integrate(fPosDef, a) {
-    var cache = [0];
-    return function (x) {
-        var lastCacheIndex = x / INT_CACHE_STEP | 0;
-        while (cache.length <= lastCacheIndex)
-            cache.push(cache[cache.length - 1] + ___integrate(fPosDef, INT_CACHE_STEP * (cache.length - 1), INT_CACHE_STEP * cache.length));
-        return cache[lastCacheIndex] + ___integrate(fPosDef, INT_CACHE_STEP * lastCacheIndex, x);
-    };
-}
+// function __integrate(fPosDef: RealFunction): RealFunction {
+//     const cache: number[] = [0];
+//     return x => {
+//         const lastCacheIndex = x / INT_CACHE_STEP | 0;
+//         while (cache.length <= lastCacheIndex)
+//             cache.push(cache[cache.length - 1] + ___integrate(fPosDef, INT_CACHE_STEP * (cache.length - 1), INT_CACHE_STEP * cache.length));
+//         return cache[lastCacheIndex] + ___integrate(fPosDef, INT_CACHE_STEP * lastCacheIndex, x);
+//     };
+// }
+// function _integrate(f: RealFunction, a: number): RealFunction {
+//     const fPos = __integrate(x => f(a + x));
+//     const fNeg = __integrate(x => f(a - x));
+//     return x => { x -= a; return x >= 0 ? fPos(x) : -fNeg(-x) };
+// }
+// NOTE: due to its addition/subtraction with "a", the above is not guarantee that it only invokes f between a and x (inclusive)!
 function _integrate(f, a) {
-    var fPos = __integrate(function (x) { return f(a + x); }, a);
-    var fNeg = __integrate(function (x) { return f(a - x); }, a);
-    return function (x) { x -= a; return x >= 0 ? fPos(x) : -fNeg(-x); };
+    var cacheLeft = [0];
+    var cacheRight = [0];
+    return function (x) {
+        var left = x < a;
+        if (left) {
+            var i = 0;
+            var r = a;
+            while (true) {
+                var inext = i + 1;
+                var rnext = r - INT_CACHE_STEP;
+                if (rnext < x)
+                    break;
+                if (inext == cacheLeft.length)
+                    cacheLeft.push(cacheLeft[i] + ___integrate(f, rnext, r));
+                i = inext;
+                r = rnext;
+            }
+            return cacheLeft[i] + ___integrate(f, x, r);
+        }
+        else {
+            var i = 0;
+            var r = a;
+            while (true) {
+                var inext = i + 1;
+                var rnext = r + INT_CACHE_STEP;
+                if (rnext > x)
+                    break;
+                if (inext == cacheRight.length)
+                    cacheRight.push(cacheRight[i] + ___integrate(f, r, rnext));
+                i = inext;
+                r = rnext;
+            }
+            return cacheRight[i] + ___integrate(f, r, x);
+        }
+    };
 }
 function integrate(f, pow, a) {
     if (pow === void 0) { pow = 1; }
