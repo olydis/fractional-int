@@ -1,7 +1,9 @@
 "use strict";
 var INT_CACHE_STEP = 1;
 var INT_STEP = 1 / 512;
+// const INT_STEP = 1 / 512 / 16;
 var DER_STEP = 1 / 1024 / 256;
+// const DER_STEP = 1 / 8;
 function ___integrate(f, min, max) {
     var res = 0;
     for (; min + INT_STEP <= max; min += INT_STEP)
@@ -64,9 +66,9 @@ function integrate(f, pow, a) {
     if (pow === void 0) { pow = 1; }
     if (a === void 0) { a = 0; }
     if (pow < 0) {
-        var k_1 = Math.ceil(1 - pow);
+        var k_1 = Math.ceil(-pow);
         // return _derivate(integrate(f, k + pow, a), k);
-        return function (x) { return _derivate(integrate(f, k_1 + pow, x - 3), k_1)(x); };
+        return function (x) { return _derivate(integrate(f, k_1 + pow, x - 1), k_1)(x); };
     }
     if (pow === 0)
         return f;
@@ -102,6 +104,30 @@ function derivate(f, pow, a) {
     if (pow === void 0) { pow = 1; }
     if (a === void 0) { a = 0; }
     return integrate(f, -pow, a);
+}
+// experimental
+function scan(f, coeffs, pow) {
+    var coeffPower = coeffs.length - 1;
+    var offset = pow / 2;
+    var scale = Math.pow(DER_STEP, 1 / pow) * /*guess:*/ pow / coeffPower;
+    return function (x) {
+        var sum = 0;
+        for (var k = 0; k < coeffs.length; ++k)
+            sum += coeffs[k] * f(x + (k - offset) * scale);
+        return sum / DER_STEP;
+    };
+}
+function lincache(f, resolution) {
+    var cache = [];
+    return function (x) {
+        var t = x / resolution;
+        var left = Math.floor(t);
+        var right = Math.ceil(t);
+        t -= left;
+        cache[left] = cache[left] | f(left * resolution);
+        cache[right] = cache[right] | f(right * resolution);
+        return t * cache[right] + (1 - t) * cache[left];
+    };
 }
 // from math.js
 function gamma(n) {

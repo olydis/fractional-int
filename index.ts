@@ -2,7 +2,9 @@ type RealFunction = (x: number) => number;
 
 const INT_CACHE_STEP = 1;
 const INT_STEP = 1 / 512;
+// const INT_STEP = 1 / 512 / 16;
 const DER_STEP = 1 / 1024 / 256;
+// const DER_STEP = 1 / 8;
 
 function ___integrate(f: RealFunction, min: number, max: number): number {
     let res = 0;
@@ -61,9 +63,9 @@ function _integrate(f: RealFunction, a: number): RealFunction {
 }
 function integrate(f: RealFunction, pow: number = 1, a: number = 0): RealFunction {
     if (pow < 0) {
-        const k = Math.ceil(1 - pow);
+        const k = Math.ceil(- pow);
         // return _derivate(integrate(f, k + pow, a), k);
-        return x => _derivate(integrate(f, k + pow, x - 3), k)(x);
+        return x => _derivate(integrate(f, k + pow, x - 1), k)(x);
     }
     if (pow === 0) return f;
     if (pow < 1) {
@@ -96,6 +98,31 @@ function _derivate(f: RealFunction, pow: number): RealFunction {
 function derivate(f: RealFunction, pow: number = 1, a: number = 0): RealFunction {
     return integrate(f, -pow, a);
 }
+// experimental
+function scan(f: RealFunction, coeffs: number[], pow: number): RealFunction {
+    const coeffPower = coeffs.length - 1;
+    const offset = pow / 2;
+    const scale = Math.pow(DER_STEP, 1 / pow) * /*guess:*/pow / coeffPower;
+    return x => {
+        let sum = 0;
+        for (let k = 0; k < coeffs.length; ++k)
+            sum += coeffs[k] * f(x + (k - offset) * scale);
+        return sum / DER_STEP;
+    };
+}
+function lincache(f: RealFunction, resolution: number): RealFunction {
+    const cache: { [key: number]: number } = [];
+    return x => {
+        let t = x / resolution;
+        const left = Math.floor(t);
+        const right = Math.ceil(t);
+        t -= left;
+        cache[left] = cache[left] | f(left * resolution);
+        cache[right] = cache[right] | f(right * resolution);
+        return t * cache[right] + (1 - t) * cache[left];
+    };
+}
+
 // from math.js
 function gamma(n: number): number {
     const g = 4.7421875;

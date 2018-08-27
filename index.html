@@ -4,37 +4,116 @@
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="index.js"></script>
     <script>
-        // const f = x => Math.sin(x);
-        // const f = x => x * x * x;
-        // const f = x => 1;
-        const f = x => x*x;
-        const alphas = [0.5, 1, 1.5];
-        // const alphas = [0.5];
-        // const alphas = [0.9, 1, 1.1];
-        // const alphas = [0, 0.5];
-        const fs = alphas.map(alpha => derivate(f, alpha, -5));
-        const min = -10;
-        const max = 10;
-        // const min = 0.3;
-        // const max = 0.5;
-        const step = (max - min) / 128;
+
+        // f'(x) = lim (-f(x) + f(x + h)) / h
+        // f'.5(x) = (lim_h (a*f(x) + b*f(x+h) + c*f(x+2h)) / (d*sqrt(h)))
+        // f'(x) = lim_i [(
+        //  a*(lim_h [(a*f(x)    + b*f(x+h)    + c*f(x+2h))    / (d*sqrt(h)])) + 
+        //  b*(lim_h [(a*f(x+i)  + b*f(x+i+h)  + c*f(x+i+2h))  / (d*sqrt(h)])) + 
+        //  c*(lim_h [(a*f(x+2i) + b*f(x+2i+h) + c*f(x+2i+2h)) / (d*sqrt(h)]))
+        // ) / (d*sqrt(i))]
+        // = lim_i [(
+        //  a*((a*f(x)    + b*f(x+i)    + c*f(x+2i))    / (d*sqrt(i))) + 
+        //  b*((a*f(x+i)  + b*f(x+i+i)  + c*f(x+i+2i))  / (d*sqrt(i))) + 
+        //  c*((a*f(x+2i) + b*f(x+2i+i) + c*f(x+2i+2i)) / (d*sqrt(i)))
+        // ) / (d*sqrt(i))]
+        // = lim_i [(
+        //  a*(a*f(x)    + b*f(x+i)    + c*f(x+2i)) + 
+        //  b*(a*f(x+i)  + b*f(x+i+i)  + c*f(x+i+2i)) + 
+        //  c*(a*f(x+2i) + b*f(x+2i+i) + c*f(x+2i+2i))
+        // ) / (d*d*i)]
+        // =
+        // lim_h [(
+        //  a*a*f(x+0h) + a*b*f(x+1h) + a*c*f(x+2h) + 
+        //  a*b*f(x+1h) + b*b*f(x+2h) + b*c*f(x+3h) + 
+        //  a*c*f(x+2h) + b*c*f(x+3h) + c*c*f(x+4h)
+        // ) / (d*d*h)]
+        // =                                                d = 2
+        // lim_h [(
+        //  a*a*f(x+0h) + a*b*f(x+1h) + a*c*f(x+2h) + 
+        //  a*b*f(x+1h) + b*b*f(x+2h) + b*c*f(x+3h) + 
+        //  a*c*f(x+2h) + b*c*f(x+3h) + c*c*f(x+4h)
+        // ) / 4h]                                          a = i, c = 1
+        // !=! lim (-f(x) + f(x + 4h)) / 4h
+
+        // f'.5(x) = lim_h (i*f(x) + f(x+2h)) / (2*sqrt(h))
+        // 
+        // ex:
+        // f(x) = x^2
+        // f'.5(x)
+        // = lim_h (i*x^2 + x^2 + 4xh + 4h^2) / (2*sqrt(h))
+        // = lim_h (i*x^2 + x^2) / (2*sqrt(h))
+
+        const labels = [];
         const values = [];
-        for (let x = min; x <= max; x += step)
-            values.push([x].concat(fs.map(f => f(x))));
 
         google.charts.load('current', { 'packages': ['corechart'] });
         google.charts.setOnLoadCallback(main);
         function main() {
+            window.onresize = render;
+            render();
+            for (const input of document.getElementsByTagName("input")) {
+                input.oninput = render;
+            }
+        }
+        function update() {
+            values.length = 0;
+            labels.length = 0;
+
+            // const min = -10;
+            // const max = 10;
+            const min = -5;
+            const max = 5;
+            // const min = 0.46;
+            // const max = 0.47;
+            const step = (max - min) / 128;
+
+            const f = eval("x => " + document.getElementById("inp_f").value);
+            // const f = x => Math.sin(x);
+            // const f = x => x * x * x;
+            // const f = x => 1;
+            // const f = x => x*x;
+            const alphas = [0, document.getElementById("inp_alpha").value];
+            // const alphas = [0.5, 1, 1.5];
+            // const alphas = [1.5];
+            // const alphas = [0.9, 1, 1.1];
+            // const alphas = [0, 0.5];
+            labels.push(...alphas);
+            const fs = alphas.map(alpha => derivate(f, alpha, -5));
+
+            // add more functions here
+            // alphas.push("0.5+0.5");
+            // fs.push(derivate(lincache(derivate(f, 0.5, -5), step), 0.5, -5));
+            // alphas.push("scan");
+            // const fake = scan(f, [1, -0.00018, -2, 0.00018, 1], 1.5); // * 80
+            // const fake = scan(f, [1 - 0.00009, -2, 1 + 0.00009], 1.5); // * 80
+            // const c = 0;
+            // const fake = scan(f, [1 - 0.00009 - c / 2, -2 + c - Math.pow(2, -28) * 0.9, 1 + 0.00009 - c / 2], 1.5);
+            // fs.push(x => fake(x) * 62);
+
+            for (let x = min; x <= max; x += step)
+                values.push([x].concat(fs.map(f => f(x))));
+        }
+        function render() {
+            update();
             var data = new google.visualization.DataTable();
             data.addColumn("number", "x");
-            for (const alpha of alphas)
-                data.addColumn("number", "α = " + alpha);
+            for (const label of labels)
+                data.addColumn("number", "α = " + label);
             data.addRows(values);
 
             var options = {
                 hAxis: { title: 'x' },
-                vAxis: { title: 'f\'α(x)' },
-                title: 'Fraction Derivation',
+                vAxis: {
+                    title: 'f\'α(x)',
+                    viewWindowMode: "maximized"
+                },
+                chartArea: {
+                    left: 100,
+                    right: 200,
+                    bottom: 100,
+                    top: 20
+                },
                 // curveType: 'function',
                 // legend: { position: 'bottom' }
             };
@@ -44,10 +123,24 @@
             chart.draw(data, options);
         }
     </script>
+    <style>
+        #controls * {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 2rem;
+        }
+    </style>
 </head>
 
 <body>
-    <div id="curve_chart" style="width: 100%; height: 100%; position: fixed;"></div>
+    <div id="curve_chart" style="width: 100%; height: calc(100% - 100px); position: fixed;"></div>
+    <div id="controls" style="width: 100%; height: 100px; position: fixed; top: calc(100% - 100px); text-align: center; background: lightgray">
+        <div>f(x) =
+            <input id="inp_f" type="text" value="Math.sin(x)">
+        </div>
+        <div>α =
+            <input id="inp_alpha" type="range" min="0" max="3" value="2.5" step="0.1">
+        </div>
+    </div>
 </body>
 
 </html>
