@@ -63,9 +63,9 @@ function _integrate(f: RealFunction, a: number): RealFunction {
 }
 function integrate(f: RealFunction, pow: number = 1, a: number = 0): RealFunction {
     if (pow < 0) {
-        const k = Math.ceil(- pow);
+        const k = Math.ceil(2 - pow);
         // return _derivate(integrate(f, k + pow, a), k);
-        return x => _derivate(integrate(f, k + pow, x - 1), k)(x);
+        return x => _derivate(integrate(f, k + pow, x - 3), k)(x);
     }
     if (pow === 0) return f;
     if (pow < 1) {

@@ -66,9 +66,9 @@ function integrate(f, pow, a) {
     if (pow === void 0) { pow = 1; }
     if (a === void 0) { a = 0; }
     if (pow < 0) {
-        var k_1 = Math.ceil(-pow);
+        var k_1 = Math.ceil(2 - pow);
         // return _derivate(integrate(f, k + pow, a), k);
-        return function (x) { return _derivate(integrate(f, k_1 + pow, x - 1), k_1)(x); };
+        return function (x) { return _derivate(integrate(f, k_1 + pow, x - 3), k_1)(x); };
     }
     if (pow === 0)
         return f;
