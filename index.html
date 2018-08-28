@@ -5,46 +5,6 @@
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="index.js"></script>
     <script>
-
-        // f'(x) = lim (-f(x) + f(x + h)) / h
-        // f'.5(x) = (lim_h (a*f(x) + b*f(x+h) + c*f(x+2h)) / (d*sqrt(h)))
-        // f'(x) = lim_i [(
-        //  a*(lim_h [(a*f(x)    + b*f(x+h)    + c*f(x+2h))    / (d*sqrt(h)])) + 
-        //  b*(lim_h [(a*f(x+i)  + b*f(x+i+h)  + c*f(x+i+2h))  / (d*sqrt(h)])) + 
-        //  c*(lim_h [(a*f(x+2i) + b*f(x+2i+h) + c*f(x+2i+2h)) / (d*sqrt(h)]))
-        // ) / (d*sqrt(i))]
-        // = lim_i [(
-        //  a*((a*f(x)    + b*f(x+i)    + c*f(x+2i))    / (d*sqrt(i))) + 
-        //  b*((a*f(x+i)  + b*f(x+i+i)  + c*f(x+i+2i))  / (d*sqrt(i))) + 
-        //  c*((a*f(x+2i) + b*f(x+2i+i) + c*f(x+2i+2i)) / (d*sqrt(i)))
-        // ) / (d*sqrt(i))]
-        // = lim_i [(
-        //  a*(a*f(x)    + b*f(x+i)    + c*f(x+2i)) + 
-        //  b*(a*f(x+i)  + b*f(x+i+i)  + c*f(x+i+2i)) + 
-        //  c*(a*f(x+2i) + b*f(x+2i+i) + c*f(x+2i+2i))
-        // ) / (d*d*i)]
-        // =
-        // lim_h [(
-        //  a*a*f(x+0h) + a*b*f(x+1h) + a*c*f(x+2h) + 
-        //  a*b*f(x+1h) + b*b*f(x+2h) + b*c*f(x+3h) + 
-        //  a*c*f(x+2h) + b*c*f(x+3h) + c*c*f(x+4h)
-        // ) / (d*d*h)]
-        // =                                                d = 2
-        // lim_h [(
-        //  a*a*f(x+0h) + a*b*f(x+1h) + a*c*f(x+2h) + 
-        //  a*b*f(x+1h) + b*b*f(x+2h) + b*c*f(x+3h) + 
-        //  a*c*f(x+2h) + b*c*f(x+3h) + c*c*f(x+4h)
-        // ) / 4h]                                          a = i, c = 1
-        // !=! lim (-f(x) + f(x + 4h)) / 4h
-
-        // f'.5(x) = lim_h (i*f(x) + f(x+2h)) / (2*sqrt(h))
-        // 
-        // ex:
-        // f(x) = x^2
-        // f'.5(x)
-        // = lim_h (i*x^2 + x^2 + 4xh + 4h^2) / (2*sqrt(h))
-        // = lim_h (i*x^2 + x^2) / (2*sqrt(h))
-
         const alphas = [];
         const values = [];
 
@@ -69,14 +29,10 @@
             values.length = 0;
             alphas.length = 0;
 
-            // const min = -10;
-            // const max = 10;
             const min = +document.getElementById("inp_xmin").value;
             document.getElementById("inp_xmin").style.background = isNaN(min) ? "#FCC" : null;
             const max = +document.getElementById("inp_xmax").value;
             document.getElementById("inp_xmax").style.background = isNaN(max) ? "#FCC" : null;
-            // const min = 0.46;
-            // const max = 0.47;
             const step = (max - min) / 128;
 
             let f;
@@ -88,36 +44,19 @@
                 document.getElementById("inp_f").style.background = "#FCC";
                 return;
             }
-            // const f = x => Math.sin(x);
-            // const f = x => x * x * x;
-            // const f = x => 1;
-            // const f = x => x*x;
-
-            // const alphas = [0.5, 1, 1.5];
-            // const alphas = [1.5];
-            // const alphas = [0.9, 1, 1.1];
-            // const alphas = [0, 0.5];
 
             const userAlpha = document.getElementById("inp_alpha").value;
             document.getElementById("out_alpha").innerText = userAlpha;
             alphas.push(...[0, 1, userAlpha]);
             const fs = alphas.map(alpha => derivate(f, alpha, -5));
 
-            // add more functions here
-            // alphas.push("0.5+0.5");
-            // fs.push(derivate(lincache(derivate(f, 0.5, -5), step), 0.5, -5));
-            // alphas.push("scan");
-            // const fake = scan(f, [1, -0.00018, -2, 0.00018, 1], 1.5); // * 80
-            // const fake = scan(f, [1 - 0.00009, -2, 1 + 0.00009], 1.5); // * 80
-            // const c = 0;
-            // const fake = scan(f, [1 - 0.00009 - c / 2, -2 + c - Math.pow(2, -28) * 0.9, 1 + 0.00009 - c / 2], 1.5);
-            // fs.push(x => fake(x) * 62);
 
             for (let x = min; x <= max; x += step)
                 values.push([x].concat(fs.map(f => f(x))));
 
             render();
         }
+        // source: https://stackoverflow.com/questions/36721830/convert-hsl-to-rgb-and-hex
         function hslToHex(h, s, l) {
             h /= 360;
             s /= 100;
