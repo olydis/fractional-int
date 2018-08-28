@@ -1,6 +1,7 @@
 <html>
 
 <head>
+    <title>Fractional Derivation Playground</title>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="index.js"></script>
     <script>
@@ -51,7 +52,7 @@
         google.charts.setOnLoadCallback(main);
         function main() {
             // random init
-            const funcs = ["Math.sin(x)*x", "Math.sin(x)", "x*x*x", "Math.exp(x/3)"]
+            const funcs = ["Math.sin(x)*x", "Math.sin(x)", "x*x*x", "Math.exp(x/3)", "Math.exp(-x*x)"]
             document.getElementById("inp_f").value = funcs[Math.random() * funcs.length | 0];
 
             window.onresize = update;
@@ -222,9 +223,11 @@
             <code>f'</code>, as well as
             <code>f<sup>(α)</sup></code> with
             <code>α ∈ [0, 4]</code> chosen by you.
-            <br>
+            <br><br>
             <b>Disclaimer: Expect imprecision!</b> This is a very hacky, unscientific numerical approximation for demonstrative
-            purposes. Feel free to improve that state by
+            purposes.
+            <br>
+            Feel free to improve that state by
             <a href="https://github.com/olydis/fractional-int">contributing</a>.
         </span>
     </div>

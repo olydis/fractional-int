@@ -129,7 +129,7 @@ function lincache(f, resolution) {
         return t * cache[right] + (1 - t) * cache[left];
     };
 }
-// from math.js
+// "gamma" derived from math.js (Apache License 2.0, see https://github.com/josdejong/mathjs/blob/develop/LICENSE)
 function gamma(n) {
     var g = 4.7421875;
     var p = [

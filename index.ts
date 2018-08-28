@@ -123,7 +123,7 @@ function lincache(f: RealFunction, resolution: number): RealFunction {
     };
 }
 
-// from math.js
+// "gamma" derived from math.js (Apache License 2.0, see https://github.com/josdejong/mathjs/blob/develop/LICENSE)
 function gamma(n: number): number {
     const g = 4.7421875;
     const p = [
