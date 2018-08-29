@@ -137,10 +137,16 @@
             font-size: 2rem;
             margin-bottom: 0.3rem;
         }
+        #controls>span:last-child {
+            font-size: 1rem;
+        }
 
         @media only screen and (max-width: 600px) {
             #controls>span:first-child * {
                 font-size: 1rem;
+            }
+            #controls>span:last-child {
+                font-size: 0.7rem;
             }
         }
     </style>
@@ -165,7 +171,7 @@
             </span>
             <br>
         </span>
-        <span style="display: inline-block; font-size: 1rem; margin-left: 1em; vertical-align: top; padding: 1rem">
+        <span style="display: inline-block; margin-left: 1em; vertical-align: top; padding: 1rem">
             <b>Instructions:</b> Define continuously differentiable
             <code>f(x)</code> using JavaScript syntax.
             <br>The graph constantly plots
