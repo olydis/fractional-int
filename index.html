@@ -89,7 +89,8 @@
             return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
         }
         function render() {
-            var data = new google.visualization.DataTable();
+            const target = document.getElementById('curve_chart');
+            const data = new google.visualization.DataTable();
             data.addColumn("number", "x");
             for (const alpha of alphas)
                 data.addColumn("number", "α = " + alpha);
@@ -110,8 +111,8 @@
                     viewWindowMode: "maximized"
                 },
                 chartArea: {
-                    left: 90,
-                    right: 200,
+                    left: target.clientWidth < 800 ? 40 : 90,
+                    right: target.clientWidth < 800 ? 90 : 160,
                     bottom: 50,
                     top: 20
                 },
@@ -119,7 +120,7 @@
                 // legend: { position: 'bottom' }
             };
 
-            var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+            var chart = new google.visualization.LineChart(target);
 
             chart.draw(data, options);
         }
@@ -139,7 +140,7 @@
 
         @media only screen and (max-width: 600px) {
             #controls>span:first-child * {
-                font-size: 1rem;
+                font-size: 1.5rem;
             }
         }
     </style>
@@ -148,7 +149,7 @@
 <body>
     <div id="curve_chart" style="width: 100%; height: calc(100% - 80px); position: fixed;"></div>
     <div id="controls" style="width: 100%; position: fixed; top: calc(100% - 80px); text-align: left; background: lightgray;">
-        <span style="display: inline-block; vertical-align: top; margin-left: 2rem; padding: 1rem">
+        <span style="display: inline-block; vertical-align: top; margin-left: 2em; padding: 1rem">
             <span>f(x) =
                 <input id="inp_f" type="text" style="width: 13em" value="INITIALIZING">
             </span>
@@ -164,7 +165,7 @@
             </span>
             <br>
         </span>
-        <span style="display: inline-block; font-size: 1rem; margin-left: 3rem; vertical-align: top; padding: 1rem">
+        <span style="display: inline-block; font-size: 1rem; margin-left: 1em; vertical-align: top; padding: 1rem">
             <b>Instructions:</b> Define continuously differentiable
             <code>f(x)</code> using JavaScript syntax.
             <br>The graph constantly plots
