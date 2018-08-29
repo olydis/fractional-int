@@ -2,8 +2,8 @@
 var INT_CACHE_STEP = 1;
 var INT_STEP = 1 / 512;
 // const INT_STEP = 1 / 512 / 16;
-var DER_STEP = 1 / 1024 / 256;
-// const DER_STEP = 1 / 8;
+// const DER_STEP = 1 / 1024 / 512;
+var DER_STEP = 1 / 1024 / 16;
 function ___integrate(f, min, max) {
     var res = 0;
     for (; min + INT_STEP <= max; min += INT_STEP)
@@ -100,10 +100,45 @@ function _derivate(f, pow) {
         return sum / DER_STEP;
     };
 }
+function getCoeffs(pow, prec) {
+    if (pow === void 0) { pow = 1; }
+    if (prec === void 0) { prec = pow; }
+    var binom = 1;
+    var coeffs = [];
+    for (var k = 0, s = 1; k <= prec; ++k, s = -s) {
+        coeffs.push(s * binom);
+        binom *= pow - k;
+        binom /= k + 1;
+        if (Math.abs(binom) < 10e-12)
+            break;
+    }
+    return coeffs;
+}
 function derivate(f, pow, a) {
     if (pow === void 0) { pow = 1; }
     if (a === void 0) { a = 0; }
-    return integrate(f, -pow, a);
+    // HACK: probe function layout to determine best params
+    var probingCoeffs = getCoeffs(0.1, 10000);
+    var divergentish = Math.pow(probingCoeffs[probingCoeffs.length - 1] * (Math.abs(f(probingCoeffs.length + 10)) + Math.abs(f(-probingCoeffs.length - 10))), 2) > probingCoeffs.length;
+    var stepSize = divergentish ? Math.pow(2, -16) : Math.pow(2, -10);
+    var prec = divergentish ? 100000 : 10000;
+    console.log(pow, divergentish);
+    var coeffs = getCoeffs(pow, pow + prec);
+    var offset = pow / 2;
+    var step = stepSize;
+    var scale = Math.pow(step, 1 / pow);
+    if (pow < 1) {
+        scale = stepSize;
+        step = Math.pow(scale, pow);
+    }
+    // if (pow != (pow | 0))
+    //     console.log(pow, coeffs.reduce((a, b) => a + b, 0), coeffs.filter(x => x > 0).reduce((a, b) => a + b, 0), coeffs.filter(x => x < 0).reduce((a, b) => a + b, 0));
+    return function (x) {
+        var sum = 0;
+        for (var k = 0; k < coeffs.length; ++k)
+            sum += coeffs[k] * f(x + (offset - k) * scale);
+        return sum / step;
+    };
 }
 // experimental
 function scan(f, coeffs, pow) {

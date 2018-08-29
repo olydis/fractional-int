@@ -12,8 +12,9 @@
         google.charts.setOnLoadCallback(main);
         function main() {
             // random init
-            const funcs = ["Math.sin(x)*x", "Math.sin(x)", "x*x*x", "Math.exp(x/3)", "Math.exp(-x*x)"]
+            const funcs = ["Math.sin(x)*x", "Math.sin(x)", "x*x*x", "Math.exp(x/3)", "Math.exp(-x*x)", "x*Math.exp(-x*x)"]
             document.getElementById("inp_f").value = funcs[Math.random() * funcs.length | 0];
+            // document.getElementById("inp_f").value = "x*x*x";
 
             window.onresize = update;
             update();
@@ -45,8 +46,9 @@
                 return;
             }
 
-            const userAlpha = document.getElementById("inp_alpha").value;
+            const userAlpha = +document.getElementById("inp_alpha").value;
             document.getElementById("out_alpha").innerText = userAlpha;
+            // alphas.push(...[0.1,0.2,0.4,0.5,0.6,0.8,0.9]);
             alphas.push(...[0, 1, userAlpha]);
             const fs = alphas.map(alpha => derivate(f, alpha, -5));
 
@@ -156,17 +158,18 @@
             <br>
         </span>
         <span style="display: inline-block; font-size: 1rem; margin-left: 5rem; vertical-align: top; padding: 1rem">
-            <b>Instructions:</b> Define
-            <code>f(x)</code> using JavaScript syntax. The graph constantly plots
+            <b>Instructions:</b> Define continuously differentiable
+            <code>f(x)</code> using JavaScript syntax.
+            <br>The graph constantly plots
             <code>f</code> and
             <code>f'</code>, as well as
             <code>f<sup>(α)</sup></code> with
             <code>α ∈ [0, 4]</code> chosen by you.
-            <br><br>
-            <b>Disclaimer: Expect imprecision!</b> This is a very hacky, unscientific numerical approximation for demonstrative
-            purposes.
             <br>
-            Feel free to improve that state by
+            <br>
+            <b>Disclaimer: Expect imprecision!</b> This is a very hacky numerical approximation for demo
+            purposes.
+            <br> Feel free to improve that state by
             <a href="https://github.com/olydis/fractional-int">contributing</a>.
         </span>
     </div>

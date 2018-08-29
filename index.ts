@@ -3,8 +3,8 @@ type RealFunction = (x: number) => number;
 const INT_CACHE_STEP = 1;
 const INT_STEP = 1 / 512;
 // const INT_STEP = 1 / 512 / 16;
-const DER_STEP = 1 / 1024 / 256;
-// const DER_STEP = 1 / 8;
+// const DER_STEP = 1 / 1024 / 512;
+const DER_STEP = 1 / 1024 / 16;
 
 function ___integrate(f: RealFunction, min: number, max: number): number {
     let res = 0;
@@ -95,8 +95,45 @@ function _derivate(f: RealFunction, pow: number): RealFunction {
         return sum / DER_STEP;
     };
 }
+function getCoeffs(pow: number = 1, prec: number = pow) {
+    let binom = 1;
+    const coeffs: number[] = [];
+    for (let k = 0, s = 1; k <= prec; ++k, s = -s) {
+        coeffs.push(s * binom);
+        binom *= pow - k;
+        binom /= k + 1;
+        if (Math.abs(binom) < 10e-12) break;
+    }
+    return coeffs;
+}
+
 function derivate(f: RealFunction, pow: number = 1, a: number = 0): RealFunction {
-    return integrate(f, -pow, a);
+
+    // HACK: probe function layout to determine best params
+    const probingCoeffs = getCoeffs(0.1, 10000);
+    const divergentish = Math.pow(probingCoeffs[probingCoeffs.length-1] * (Math.abs(f(probingCoeffs.length + 10)) + Math.abs(f(-probingCoeffs.length - 10))), 2) > probingCoeffs.length;
+    const stepSize = divergentish ? Math.pow(2, -16) : Math.pow(2, -10);
+    const prec = divergentish ? 100000 : 10000;
+    console.log(pow, divergentish);
+
+    const coeffs: number[] = getCoeffs(pow, pow + prec);
+    const offset = pow / 2;
+
+    let step = stepSize;
+    let scale = Math.pow(step, 1 / pow);
+    if (pow < 1) {
+        scale = stepSize;
+        step = Math.pow(scale, pow);
+    }
+
+    // if (pow != (pow | 0))
+    //     console.log(pow, coeffs.reduce((a, b) => a + b, 0), coeffs.filter(x => x > 0).reduce((a, b) => a + b, 0), coeffs.filter(x => x < 0).reduce((a, b) => a + b, 0));
+    return x => {
+        let sum = 0;
+        for (let k = 0; k < coeffs.length; ++k)
+            sum += coeffs[k] * f(x + (offset - k) * scale);
+        return sum / step;
+    };
 }
 // experimental
 function scan(f: RealFunction, coeffs: number[], pow: number): RealFunction {
