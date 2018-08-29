@@ -2,6 +2,7 @@
 
 <head>
     <title>Fractional Derivative Playground</title>
+    <meta name="viewport" content="width=600, initial-scale=1, minimum-scale=1, maximum-scale=1">
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="index.js"></script>
     <script>
@@ -135,6 +136,12 @@
             font-size: 2rem;
             margin-bottom: 0.3rem;
         }
+
+        @media only screen and (max-width: 600px) {
+            #controls>span:first-child * {
+                font-size: 1rem;
+            }
+        }
     </style>
 </head>
 
@@ -167,8 +174,7 @@
             <code>α ∈ [0, 4]</code> chosen by you.
             <br>
             <br>
-            <b>Disclaimer: Expect imprecision!</b> This is a very hacky numerical approximation for demo
-            purposes.
+            <b>Disclaimer: Expect imprecision!</b> This is a very hacky numerical approximation for demo purposes.
             <br> Feel free to improve that state by
             <a href="https://github.com/olydis/fractional-int">contributing</a>.
         </span>
