@@ -96,6 +96,8 @@
                 data.addColumn("number", "α = " + alpha);
             data.addRows(values);
 
+            const narrowTarget = target.clientWidth < 800;
+
             const maxAlpha = document.getElementById("inp_alpha").max;
             const options = {
                 series: alphas.map((alpha, index) => ({
@@ -111,13 +113,13 @@
                     viewWindowMode: "maximized"
                 },
                 chartArea: {
-                    left: target.clientWidth < 800 ? 40 : 90,
-                    right: target.clientWidth < 800 ? 90 : 160,
+                    left: narrowTarget ? 40 : 90,
+                    right: narrowTarget ? 20 : 160,
                     bottom: 50,
                     top: 20
                 },
                 // curveType: 'function',
-                // legend: { position: 'bottom' }
+                legend: { position: narrowTarget ? 'bottom' : 'right' }
             };
 
             var chart = new google.visualization.LineChart(target);
