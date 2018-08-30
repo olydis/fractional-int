@@ -14,7 +14,7 @@
         google.charts.setOnLoadCallback(main);
         function main() {
             // random init
-            const funcs = [/*"Math.sin(x)*x", */"Math.sin(x)", "x*x*x", "Math.exp(x/3)", "Math.exp(-x*x)"/*, "x*Math.exp(-x*x)"*/]
+            const funcs = [/*"Math.sin(x)*x", */"Math.sin(x)", "x*x*x", "Math.exp(x/3)", "Math.exp(-x*x/2)"/*, "x*Math.exp(-x*x)"*/]
             document.getElementById("inp_f").value = funcs[Math.random() * funcs.length | 0];
             // document.getElementById("inp_f").value = "x*x*x";
 
@@ -126,7 +126,7 @@
                     bottom: 50,
                     top: 20
                 },
-                curveType: regularMode ? null : 'function',
+                curveType: 'function', //regularMode ? null : 'function',
                 legend: { position: narrowTarget ? 'bottom' : 'right' }
             };
 
