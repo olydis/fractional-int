@@ -19,9 +19,10 @@
 
             window.onresize = update;
             update();
-            for (const input of document.getElementsByTagName("input")) {
+            for (const input of document.getElementsByTagName("input"))
                 input.oninput = update;
-            }
+            for (const input of document.getElementsByTagName("select"))
+                input.oninput = update;
         }
         function update() {
             // UI
@@ -51,8 +52,11 @@
             document.getElementById("out_alpha").innerText = userAlpha;
             // alphas.push(...[0.1,0.2,0.4,0.5,0.6,0.8,0.9]);
             alphas.push(...[0, 1, userAlpha]);
-            const fs = alphas.map(alpha => derivate(f, alpha, -5));
-
+            const mode = document.getElementById("inp_algo").value;
+            console.log(document.getElementById("inp_algo"));
+            const fs = mode == "gl"
+                ? alphas.map(alpha => derivate(f, alpha, 0)) // Grünwald–Letnikov
+                : alphas.map(alpha => integrate(f, -alpha, 0)); // Riemann–Liouville
 
             for (let x = min; x <= max; x += step)
                 values.push([x].concat(fs.map(f => f(x))));
@@ -134,17 +138,64 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
         }
 
-        #controls>span:first-child * {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 2rem;
-            margin-bottom: 0.3rem;
-        }
-        #controls>span:last-child {
-            font-size: 1rem;
+        * {
+            font-size: inherit;
         }
 
-        @media only screen and (max-width: 600px) {
-            #controls>span:first-child * {
+        #controls>span:first-child * {
+            font-family: inherit;
+            margin-bottom: 0.3rem;
+        }
+
+        #controls>span:first-child {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 2rem;
+            display: inline-block;
+            vertical-align: top;
+            margin-left: 2em;
+            padding: 1rem;
+            min-width: 18em;
+        }
+
+        #controls>span:last-child {
+            font-size: 1rem;
+            display: inline-block;
+            margin-left: 1em;
+            vertical-align: top;
+            padding: 1em;
+            margin: auto;
+        }
+
+        #controls {
+            width: 100%;
+            position: fixed;
+            top: calc(100% - 80px);
+            text-align: left;
+            background: lightgray;
+            display: flex;
+            flex-flow: row;
+        }
+
+        #curve_chart {
+            width: 100%;
+            height: calc(100% - 80px);
+            position: fixed;
+        }
+
+        @media only screen and (max-width: 1100px) {
+            #controls>span:first-child {
+                font-size: 1.5rem;
+            }
+            #controls>span:last-child {
+                font-size: 0.85rem;
+            }
+        }
+
+        @media only screen and (max-width: 800px) {
+            #controls {
+                flex-direction: column;
+            }
+            #controls>span:first-child {
                 font-size: 1rem;
             }
             #controls>span:last-child {
@@ -155,9 +206,9 @@
 </head>
 
 <body>
-    <div id="curve_chart" style="width: 100%; height: calc(100% - 80px); position: fixed;"></div>
-    <div id="controls" style="width: 100%; position: fixed; top: calc(100% - 80px); text-align: left; background: lightgray;">
-        <span style="display: inline-block; vertical-align: top; margin-left: 2em; padding: 1rem">
+    <div id="curve_chart"></div>
+    <div id="controls">
+        <span>
             <span>f(x) =
                 <input id="inp_f" type="text" style="width: 13em" value="INITIALIZING">
             </span>
@@ -173,18 +224,21 @@
             </span>
             <br>
         </span>
-        <span style="display: inline-block; margin-left: 1em; vertical-align: top; padding: 1rem">
+        <span>
             <b>Instructions:</b> Define continuously differentiable
-            <code>f(x)</code> using JavaScript syntax.
-            <br>The graph constantly plots
+            <code>f(x)</code> using JavaScript syntax. The graph constantly plots
             <code>f</code> and
-            <code>f'</code>, as well as
+            <code>f'</code> (dashed), as well as
             <code>f<sup>(α)</sup></code> with
             <code>α ∈ [0, 4]</code> chosen by you.
             <br>
             <br>
-            <b>Disclaimer: Expect imprecision!</b> This is a very hacky numerical approximation for demo purposes.
-            <br> Feel free to improve that state by
+            <b>Expect imprecision!</b> This is a very hacky numerical approximation of
+            <select id="inp_algo">
+                <option value="gl">Grünwald–Letnikov</option>
+                <option value="rl">Riemann–Liouville</option>
+            </select>
+            for demo purposes. Feel free to improve that state by
             <a href="https://github.com/olydis/fractional-int">contributing</a>.
         </span>
     </div>

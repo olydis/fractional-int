@@ -117,7 +117,7 @@ function derivate(f: RealFunction, pow: number = 1, a: number = 0): RealFunction
     console.log(pow, divergentish);
 
     const coeffs: number[] = getCoeffs(pow, pow + prec);
-    const offset = pow / 2;
+    const offset = pow / 2; // other values cause visible shift in higher e^x derivatives
 
     let step = stepSize;
     let scale = Math.pow(step, 1 / pow);

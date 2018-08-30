@@ -124,7 +124,7 @@ function derivate(f, pow, a) {
     var prec = divergentish ? 100000 : 10000;
     console.log(pow, divergentish);
     var coeffs = getCoeffs(pow, pow + prec);
-    var offset = pow / 2;
+    var offset = pow / 2; // other values cause visible shift in higher e^x derivatives
     var step = stepSize;
     var scale = Math.pow(step, 1 / pow);
     if (pow < 1) {
