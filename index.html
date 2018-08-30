@@ -3,6 +3,7 @@
 <head>
     <title>Fractional Derivative Playground</title>
     <meta name="viewport" content="width=600, initial-scale=1, minimum-scale=1, maximum-scale=1">
+    <link rel="icon" type="image/png" href="favicon.png">
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="index.js"></script>
     <script>
@@ -50,7 +51,8 @@
 
             const userAlpha = +document.getElementById("inp_alpha").value;
             document.getElementById("out_alpha").innerText = userAlpha;
-            // alphas.push(...[0.1,0.2,0.4,0.5,0.6,0.8,0.9]);
+            // alphas.push(...[0, 0.1,0.2,0.4,0.5,0.6,0.8,0.9, 1]);
+            // alphas.push(...[0, 0.2,0.4,0.6,0.8, 1, 1.2, 1.4, 1.6, 1.8, 2]);
             alphas.push(...[0, 1, userAlpha]);
             const mode = document.getElementById("inp_algo").value;
             console.log(document.getElementById("inp_algo"));
@@ -102,12 +104,14 @@
 
             const narrowTarget = target.clientWidth < 800;
 
+            const regularMode = alphas.length == 3;
+
             const maxAlpha = document.getElementById("inp_alpha").max;
             const options = {
                 series: alphas.map((alpha, index) => ({
-                    color: hslToHex((1 - alpha / maxAlpha) * 210, 100, 40),
-                    lineDashStyle: index == alphas.length - 1 ? null : [4, 4],
-                    lineWidth: index == alphas.length - 1 ? 3 : 2
+                    color: regularMode ? hslToHex((1 - alpha / maxAlpha) * 210, 100, 40) : hslToHex((1 - alpha / maxAlpha * 1.5) * 210, 100, 40),
+                    lineDashStyle: !regularMode || index == alphas.length - 1 ? null : [4, 4],
+                    lineWidth: regularMode && index == alphas.length - 1 ? 3 : 2
                 })),
                 hAxis: {
                     // title: 'x'
@@ -122,7 +126,7 @@
                     bottom: 50,
                     top: 20
                 },
-                // curveType: 'function',
+                curveType: regularMode ? null : 'function',
                 legend: { position: narrowTarget ? 'bottom' : 'right' }
             };
 
