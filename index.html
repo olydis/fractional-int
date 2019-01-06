@@ -68,9 +68,9 @@
             };
             return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
         }
-        const maxVal = 10;
-        function renderValue(ctx, x, y, dx, dy, v) {
-            const color = v > 0 ? hslToHex(240, 100, 100 - Math.pow(v / maxVal, 1/4) * 50) : hslToHex(360, 100, 100 - Math.pow(-v / maxVal, 1/4) * 50);
+        const lift = 10;
+        function renderValue(ctx, x, y, dx, dy, v, maxVal) {
+            const color = v > 0 ? hslToHex(240, 100, 100 - Math.pow(v / maxVal, 1/lift) * 50) : hslToHex(360, 100, 100 - Math.pow(-v / maxVal, 1/lift) * 50);
             ctx.fillStyle = color;
             ctx.fillRect(x - dx / 2, y, dx, dy);
         }
@@ -80,14 +80,17 @@
             rt.height = rt.clientHeight;
             const ctx = rt.getContext("2d");
             ctx.translate(rt.width / 2, 0);
-            ctx.scale(100, 100);
 
+            const maxY = 80;
             const dx = 1;
             const dy = 0.1;
-            for (let y = 0; y < 10; y += dy) {
-                const vs = getCoeffs(y, 10);
+            const maxValue = getCoeffs(maxY, maxY).reduce((a,b) => Math.max(a,b), 0);
+            console.log(maxValue);
+            ctx.scale(1/dy, 1/dy);
+            for (let y = 0; y < maxY; y += dy) {
+                const vs = getCoeffs(y, 100);
                 for (let x = 0; x < vs.length; x += dx)
-                    renderValue(ctx, x - y, y, dx, dy, vs[x]);
+                    renderValue(ctx, x - y/2, y, dx, dy, /*Math.abs*/(vs[x]), maxValue);
             }
             // debugger;
             // ctx.
