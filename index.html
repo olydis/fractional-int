@@ -8,20 +8,9 @@
     <meta name="keywords" content="Fractional,Derivative,Derivation,Derive,Interactive,Online,Playground,Integration">
     <title>Fractional Derivative Playground</title>
     <link rel="icon" type="image/png" href="favicon.png">
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="index.js"></script>
     <script>
-        const alphas = [];
-        const values = [];
-
-        google.charts.load('current', { 'packages': ['corechart'] });
-        google.charts.setOnLoadCallback(main);
         function main() {
-            // random init
-            const funcs = [/*"Math.sin(x)*x", */"Math.sin(x)", "x*x*x", "Math.exp(x/3)", "Math.exp(-x*x/2)"/*, "x*Math.exp(-x*x)"*/]
-            document.getElementById("inp_f").value = funcs[Math.random() * funcs.length | 0];
-            // document.getElementById("inp_f").value = "x*x*x";
-
             window.onresize = update;
             update();
             for (const input of document.getElementsByTagName("input"))
@@ -32,10 +21,8 @@
         function update() {
             // UI
             const ctrlHeight = document.getElementById("controls").scrollHeight + "px";
-            document.getElementById("curve_chart").style.height = document.getElementById("controls").style.top = "calc(100% - " + ctrlHeight + ")";
+            document.getElementById("render_target").style.height = document.getElementById("controls").style.top = "calc(100% - " + ctrlHeight + ")";
 
-            values.length = 0;
-            alphas.length = 0;
 
             const min = +document.getElementById("inp_xmin").value;
             document.getElementById("inp_xmin").style.background = isNaN(min) ? "#FCC" : null;
@@ -43,29 +30,12 @@
             document.getElementById("inp_xmax").style.background = isNaN(max) ? "#FCC" : null;
             const step = (max - min) / 128;
 
-            let f;
-            try {
-                f = eval("x => " + document.getElementById("inp_f").value);
-                f(0);
-                document.getElementById("inp_f").style.background = null;
-            } catch {
-                document.getElementById("inp_f").style.background = "#FCC";
-                return;
-            }
-
             const userAlpha = +document.getElementById("inp_alpha").value;
             document.getElementById("out_alpha").innerText = userAlpha;
-            // alphas.push(...[0, 0.1,0.2,0.4,0.5,0.6,0.8,0.9, 1]);
-            // alphas.push(...[0, 0.2,0.4,0.6,0.8, 1, 1.2, 1.4, 1.6, 1.8, 2]);
-            alphas.push(...[0, 1, userAlpha]);
-            const mode = document.getElementById("inp_algo").value;
-            console.log(document.getElementById("inp_algo"));
-            const fs = mode == "gl"
-                ? alphas.map(alpha => derivate(f, alpha, 0)) // Grünwald–Letnikov
-                : alphas.map(alpha => integrate(f, -alpha, 0)); // Riemann–Liouville
+            // const fs = alphas.map(alpha => derivate(x => x * x, alpha, 0));
 
-            for (let x = min; x <= max; x += step)
-                values.push([x].concat(fs.map(f => f(x))));
+            // for (let x = min; x <= max; x += step)
+                // values.push([x].concat(fs.map(f => f(x))));
 
             render();
         }
@@ -98,45 +68,29 @@
             };
             return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
         }
+        const maxVal = 10;
+        function renderValue(ctx, x, y, dx, dy, v) {
+            const color = v > 0 ? hslToHex(240, 100, 100 - Math.pow(v / maxVal, 1/4) * 50) : hslToHex(360, 100, 100 - Math.pow(-v / maxVal, 1/4) * 50);
+            ctx.fillStyle = color;
+            ctx.fillRect(x - dx / 2, y, dx, dy);
+        }
         function render() {
-            const target = document.getElementById('curve_chart');
-            const data = new google.visualization.DataTable();
-            data.addColumn("number", "x");
-            for (const alpha of alphas)
-                data.addColumn("number", "α = " + alpha);
-            data.addRows(values);
+            const rt = document.getElementById("render_canvas");
+            rt.width = rt.clientWidth;
+            rt.height = rt.clientHeight;
+            const ctx = rt.getContext("2d");
+            ctx.translate(rt.width / 2, 0);
+            ctx.scale(100, 100);
 
-            const narrowTarget = target.clientWidth < 800;
-
-            const regularMode = alphas.length == 3;
-
-            const maxAlpha = document.getElementById("inp_alpha").max;
-            const options = {
-                series: alphas.map((alpha, index) => ({
-                    color: regularMode ? hslToHex((1 - alpha / maxAlpha) * 210, 100, 40) : hslToHex((1 - alpha / maxAlpha * 1.5) * 210, 100, 40),
-                    lineDashStyle: !regularMode || index == alphas.length - 1 ? null : [4, 4],
-                    lineWidth: regularMode && index == alphas.length - 1 ? 3 : 2
-                })),
-                hAxis: {
-                    // title: 'x'
-                },
-                vAxis: {
-                    // title: 'f\'α(x)',
-                    viewWindowMode: "maximized"
-                },
-                chartArea: {
-                    left: narrowTarget ? 40 : 90,
-                    right: narrowTarget ? 20 : 160,
-                    bottom: 50,
-                    top: 20
-                },
-                curveType: 'function', //regularMode ? null : 'function',
-                legend: { position: narrowTarget ? 'bottom' : 'right' }
-            };
-
-            var chart = new google.visualization.LineChart(target);
-
-            chart.draw(data, options);
+            const dx = 1;
+            const dy = 0.1;
+            for (let y = 0; y < 10; y += dy) {
+                const vs = getCoeffs(y, 10);
+                for (let x = 0; x < vs.length; x += dx)
+                    renderValue(ctx, x - y, y, dx, dy, vs[x]);
+            }
+            // debugger;
+            // ctx.
         }
     </script>
     <style>
@@ -184,7 +138,7 @@
             flex-flow: row;
         }
 
-        #curve_chart {
+        #render_target {
             width: 100%;
             height: calc(100% - 80px);
             position: fixed;
@@ -213,14 +167,14 @@
     </style>
 </head>
 
-<body>
-    <div id="curve_chart"></div>
+<body onload="main()">
+    <div id="render_target">
+        <canvas id="render_canvas" style="display: relative; left: 0; top: 0; width: 100%; height: 100%">
+
+        </canvas>
+    </div>
     <div id="controls">
         <span>
-            <span>f(x) =
-                <input id="inp_f" type="text" style="width: 13em" value="INITIALIZING">
-            </span>
-            <br>
             <span>&nbsp;&nbsp;&nbsp;α =
                 <input id="inp_alpha" type="range" style="width: 10em" min="0" max="4" value="0.5" step="0.1">
                 <span id="out_alpha"></span>
@@ -231,23 +185,6 @@
                 <input id="inp_xmax" type="text" style="width: 3em" value="5">
             </span>
             <br>
-        </span>
-        <span>
-            <b>Instructions:</b> Define continuously differentiable
-            <code>f(x)</code> using JavaScript syntax. The graph constantly plots
-            <code>f</code> and
-            <code>f'</code> (dashed), as well as
-            <code>f<sup>(α)</sup></code> with
-            <code>α ∈ [0, 4]</code> chosen by you.
-            <br>
-            <br>
-            <b>Expect imprecision!</b> This is a very hacky numerical approximation of
-            <select id="inp_algo">
-                <option value="gl">Grünwald–Letnikov</option>
-                <option value="rl">Riemann–Liouville</option>
-            </select>
-            for demo purposes. Feel free to improve that state by
-            <a href="https://github.com/olydis/fractional-int">contributing</a>.
         </span>
     </div>
 </body>
