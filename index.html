@@ -81,7 +81,7 @@
             const ctx = rt.getContext("2d");
             ctx.translate(rt.width / 2, 0);
 
-            const f = x => Math.exp(-x * x / Math.PI / 2);
+            const f = x => Math.exp(-x * x * Math.PI);
             const maxY = 20;
             const dx = 0.1;
             const dy = 0.1;
