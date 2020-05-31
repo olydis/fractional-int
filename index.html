@@ -81,17 +81,25 @@
             const ctx = rt.getContext("2d");
             ctx.translate(rt.width / 2, 0);
 
-            const f = x => Math.exp(-x * x * Math.PI);
-            const maxY = 20;
+            const fac = 0.4;
+            const f = x => Math.exp(-x * x * Math.PI * fac * fac) * fac;
+            const maxY = 30;
             const dx = 0.1;
             const dy = 0.1;
             const maxX = rt.width * dy / 2;
             const maxValue = getCoeffs(maxY, maxY).reduce((a,b) => Math.max(a,b), 0);
             ctx.scale(1/dy, 1/dy);
-            for (let y = 0; y < maxY; y += dy) {
+            for (let y = 0; y <= maxY; y += dy) {
                 const ff = derivate(f, y);
                 for (let x = -maxX; x <= maxX; x += dx)
                     renderValue(ctx, x, y, dx, dy, ff(x), maxValue);
+            }
+            ctx.globalAlpha = 0.5;
+            // for (let y = 0; y <= maxY; y += dy) {
+            for (let y = maxY; y <= maxY + 1; y += dy) {
+                const vs = getCoeffs(y, 100);
+                for (let x = 0; x < vs.length; ++x)
+                    renderValue(ctx, x - y/2, y, 1, dy, vs[x], maxValue);
             }
             console.log("done");
         }
